@@ -1,0 +1,13 @@
+# official guide
+http://www.redmine.org/projects/redmine/wiki/HowTo_Install_Redmine_on_Heroku
+
+# user's guide
+http://railsguides.net/how-to-deploy-redmine-to-heroku/
+http://blog.antasandrej.net/redmine-on-heroku-without-pain
+http://kevinhabich.com/post/38440773473/redmine-on-heroku
+
+# heroku article
+https://devcenter.heroku.com/articles/getting-started-with-rails3
+https://devcenter.heroku.com/articles/custom-domains
+
+
