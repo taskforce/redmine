@@ -1,0 +1,92 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:	     unicorn
+# Required-Start:    $local_fs $remote_fs $network $syslog $named
+# Required-Stop:     $local_fs $remote_fs $network $syslog $named
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: starts the unicorn application server
+# Description:       starts unicorns using start-stop-daemon
+### END INIT INFO
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+UNICORN=unicorn_rails
+EXEC=unicorn_rails
+DESC="starting unicorn for"
+
+set -e
+
+. /lib/lsb/init-functions
+
+unicorn_start() {
+	if [ -f $1/config/unicorn.rb ]; then
+		log_daemon_msg "start unicorn for `basename $1`"
+		cd $1
+		bundle exec $UNICORN -E $2 -c $1/config/unicorn.rb -D
+		log_end_msg $?
+	else
+		echo "$1 is in unicorntab but not configured."
+	fi
+}
+
+unicorn_stop() {
+	if [ -f $1/tmp/unicorn.pid ]; then
+		log_daemon_msg "stop unicorn for `basename $1`"
+		kill -QUIT `cat $1/tmp/unicorn.pid`
+		log_end_msg $?
+	fi
+}
+
+unicorn_status() {
+	if [ -f $1/tmp/unicorn.pid ]; then
+		pid=`cat $1/tmp/unicorn.pid`
+		if [ -r /proc/$pid/cmdline ]; then
+			echo "app '`basename $1`' is running ($pid)"
+		else
+			echo "app '`basename $1`': process not found."
+		fi
+	elif [ -f $1/config/unicorn.rb ]; then
+		echo "app '`basename $1`' is configured as $2 mode."
+	else
+		echo "app '`basename $1`' is not configured properly."
+	fi
+}
+
+case "$1" in
+	start)
+		for line in $(cat /etc/unicorntab |grep -v ^#); do
+			app=`echo $line |cut -d: -f1`
+			mod=`echo $line |cut -d: -f2`
+			unicorn_start $app $mod
+		done
+		;;
+	stop)
+		for line in $(cat /etc/unicorntab |grep -v ^#); do
+			app=`echo $line |cut -d: -f1`
+			unicorn_stop $app
+		done
+		;;
+	restart)
+		for line in $(cat /etc/unicorntab |grep -v ^#); do
+			app=`echo $line |cut -d: -f1`
+			mod=`echo $line |cut -d: -f2`
+			unicorn_stop $app
+			sleep 1
+			unicorn_start $app $mod
+		done
+		;;
+	status)
+		for line in $(cat /etc/unicorntab |grep -v ^#); do
+			app=`echo $line |cut -d: -f1`
+			mod=`echo $line |cut -d: -f2`
+			unicorn_status $app $mod
+		done
+		;;
+	*)
+		echo "Usage: $NAME {start|stop|restart|status}" >&2
+		exit 1
+		;;
+esac
+
+exit 0
