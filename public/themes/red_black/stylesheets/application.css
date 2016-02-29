@@ -1,0 +1,93 @@
+@import url(../../../stylesheets/application.css);
+
+/* fonts	----------------------------------------------------------- */
+body,
+input,
+select,
+textarea { font-family: "맑은 고딕", Verdana, Sans-Serif; font-size: 10pt; }
+h1, h2, h3, h4 { font-family: "맑은 고딕","Trebuchet MS", Verdana, Sans-Serif; }
+/* color	----------------------------------------------------------- */
+#top-menu { background-color: #000; font-size: 0.8em; }
+#header { background-color: #444; }
+#main-menu li a:hover { background-color: #666; }
+#main { }
+a, a:link, a:visited { color: #079; }
+a.wiki-page.new { color: #900 !important; }
+.box { background-color: #fcfcfc; }
+/* geometry	----------------------------------------------------------- */
+#header { min-height: 3em; }
+
+/* table	----------------------------------------------------------- */
+table.list { border: none; }
+table.list thead th { border: solid 1px #d7d7d7; padding: 3px; }
+table.list tbody td { border: solid 1px #d7d7d7; padding: 1px; }
+table.list tbody tr:hover td { background-color: #ddd; }
+table.list th:first-of-type,
+table.list td:first-of-type { border-left: none; }
+table.list th:last-of-type,
+table.list td:last-of-type { border-right: none; }
+
+/* wiki page	----------------------------------------------------------- */
+div.wiki ol,
+div.wiki ul { padding-left: 2em; }
+div.wiki ul li { list-style: square; }
+div.wiki ul.toc li { list-style: none; }
+div.wiki h1 { font-size: 1.4em; margin-top: 3em; page-break-before: always; }
+div.wiki h1:first-of-type { margin-top: 0; page-break-before: unset; }
+div.wiki h2 { border-bottom: 1px solid #ccc; margin-top: 1em; }
+div.wiki h3, .wiki h4 { border: none; }
+div.wiki table { width: 95%; margin: 1em auto; border: none; }
+div.wiki table, div.wiki td, div.wiki th { padding: 2px; }
+div.wiki table tr th { background: #ccc; }
+div.wiki table th:first-of-type,
+div.wiki table td:first-of-type { border-left: none; }
+div.wiki table th:last-of-type,
+div.wiki table td:last-of-type { border-right: none; }
+div.wiki blockquote { background: #f9f9f9; padding: 0.1rem 0 0.1rem 0.6rem; }
+div.wiki ul.toc { line-height: 1.2em; background-color: #f9f9f9; }
+div.wiki ul.toc { padding: 0.5em 1em; }
+div.wiki ul.toc li,
+div.wiki ul.toc li li,
+div.wiki ul.toc a { font-size: inherit; }
+
+/* issues	----------------------------------------------------------- */
+.list.issues { font-size: 0.9em; }
+.list.issues tr.group td { padding: 4px; }
+.list.issues td { padding: 0; }
+.list.issues .closed,
+.list.issues .closed a { color: #aaa !important; }
+.list.issues .overdue .due_date { color: #900; }
+.list.issues .issue .subject a { color: inherit; }
+.list.issues .priority-high3 .subject a { color: #900; }
+.list.issues .priority-high2 .subject a { color: #900; font-weight: bold; }
+.list.issues .priority-highest .subject a { color: #900; font-weight: bold; }
+.list.issues .priority-highest { color: #900; }
+.list.issues table.progress { height: 0.5em; margin: auto; width: 100%; }
+
+/* forum	----------------------------------------------------------- */
+table.messages .message td { vertical-align: middle; }
+table.messages .message .subject { padding: 1px; }
+table.messages .message .author { word-break: keep-all; }
+
+/* pages	----------------------------------------------------------- */
+#content #roadmap h3 {}
+#content #activity h3 {}
+#content .box h3 { }
+
+
+/** Hacks
+ */
+/* remove level 3+ from toc */
+ul.toc ul ul {display: none; }
+
+/* obsolete / checkme
+#header, #top-menu { margin: 0px 10px 0px 11px; }
+body { min-width: 500px; }
+*/
+
+/* print settings	--------------------------------------------------- */
+@media print {
+  div#main { margin: 0 !important; }
+  div#main div#content { border: 0px !important; padding: 0px !important; }
+  .autoscroll { overflow: none; }
+}
