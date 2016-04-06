@@ -28,7 +28,8 @@ pre, code {font-family: Consolas, Menlo, "Liberation Mono", Courier, monospace;}
 
 #header {min-height:5.3em;margin:0;background-color:#628DB6;color:#f8f8f8; padding: 4px 8px 20px 6px; position:relative;}
 #header a {color:#f8f8f8;}
-#header h1 a.ancestor { font-size: 80%; }
+#header h1 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+#header h1 .breadcrumbs { display:block; font-size: .6em; font-weight: normal; }
 #quick-search {float:right;}
 
 #main-menu {position: absolute;  bottom: 0px;  left:6px; margin-right: -500px; width: 100%;}
@@ -146,9 +147,10 @@ table.list td.tick {width:15%}
 table.list td.checkbox { width: 15px; padding: 2px 0 0 0; }
 table.list td.checkbox input {padding:0px;}
 table.list td.buttons { width: 15%; white-space:nowrap; text-align: right; }
-table.list td.buttons a { padding-right: 0.6em; }
+table.list td.buttons a { margin-right: 0.6em; }
 table.list td.buttons img {vertical-align:middle;}
 table.list td.reorder {width:15%; white-space:nowrap; text-align:center; }
+table.list table.progress td {padding-right:0px;}
 table.list caption { text-align: left; padding: 0.5em 0.5em 0.5em 0; }
 
 tr.project td.name a { white-space:nowrap; }
@@ -493,7 +495,7 @@ ul.properties li span {font-style:italic;}
 .total-hours { font-size: 110%; font-weight: bold; }
 .total-hours span.hours-int { font-size: 120%; }
 
-.autoscroll {overflow-x: auto; padding:1px; margin-bottom: 1.2em;}
+.autoscroll {overflow-x: auto; padding:1px; margin-bottom: 1.2em; position: relative;}
 #user_login, #user_firstname, #user_lastname, #user_mail, #my_account_form select, #user_form select, #user_identity_url { width: 90%; }
 
 #workflow_copy_form select { width: 200px; }
@@ -901,7 +903,7 @@ p.progress-info {clear: left; font-size: 80%; margin-top:-4px; color:#777;}
 
 #content .tabs ul li a.selected:hover {background-color: #fff;}
 
-div.tabs-buttons { position:absolute; right: 0; width: 48px; height: 24px; background: white; bottom: 0; border-bottom: 1px solid #bbbbbb; }
+div.tabs-buttons { position:absolute; right: 0; width: 54px; height: 24px; background: white; bottom: 0; border-bottom: 1px solid #bbbbbb; }
 
 button.tab-left, button.tab-right {
   font-size: 0.9em;
@@ -914,6 +916,12 @@ button.tab-left, button.tab-right {
   width: 20px;
   bottom: -1px;
 }
+button.tab-left:hover, button.tab-right:hover {
+  background-color: #f5f5f5;
+}
+button.tab-left:focus, button.tab-right:focus {
+  outline: 0;
+}
 
 button.tab-left {
   right: 20px;
@@ -925,6 +933,11 @@ button.tab-right {
   right: 0;
   background: #eeeeee url(../images/bullet_arrow_right.png) no-repeat 50% 50%;
   border-top-right-radius:3px;
+}
+
+button.tab-left.disabled, button.tab-right.disabled {
+  background-color: #ccc;
+  cursor: unset;
 }
 
 /***** Diff *****/
@@ -1101,6 +1114,19 @@ a.close-icon:hover {background-image:url('../images/close_hl.png');}
   background-repeat: no-repeat;
   padding-left: 16px;
 }
+a.icon-only {
+  display: inline-block;
+  width: 0;
+  height: 16px;
+  overflow: hidden;
+  padding-top: 0;
+  padding-bottom: 0;
+  font-size: 8px;
+  vertical-align: text-bottom;
+}
+a.icon-only::after {
+  content: "&nbsp;";
+}
 
 .icon-add { background-image: url(../images/add.png); }
 .icon-edit { background-image: url(../images/edit.png); }
@@ -1170,6 +1196,8 @@ a.close-icon:hover {background-image:url('../images/close_hl.png');}
 .icon-file.application-pdf { background-image: url(../images/files/pdf.png); }
 .icon-file.application-zip { background-image: url(../images/files/zip.png); }
 .icon-file.application-x-gzip { background-image: url(../images/files/zip.png); }
+
+.contextual>.icon:not(:first-child), .buttons>.icon:not(:first-child) { margin-left: 5px; }
 
 img.gravatar {
   padding: 2px;

@@ -1,5 +1,5 @@
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -195,6 +195,13 @@ class Version < ActiveRecord::Base
         name == version.name ? id <=> version.id : name <=> version.name
       end
     end
+  end
+
+  def css_classes
+    [
+      completed? ? 'version-completed' : 'version-incompleted',
+      "version-#{status}"
+    ].join(' ')
   end
 
   def self.fields_for_order_statement(table=nil)

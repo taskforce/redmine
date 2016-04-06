@@ -1,5 +1,5 @@
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -24,6 +24,11 @@ class SettingsControllerTest < ActionController::TestCase
   def setup
     User.current = nil
     @request.session[:user_id] = 1 # admin
+  end
+
+  def teardown
+    Setting.delete_all
+    Setting.clear_cache
   end
 
   def test_index
@@ -78,7 +83,6 @@ class SettingsControllerTest < ActionController::TestCase
     assert !Setting.bcc_recipients?
     assert_equal %w(issue_added issue_updated news_added), Setting.notified_events
     assert_equal 'Test footer', Setting.emails_footer
-    Setting.clear_cache
   end
 
   def test_edit_commit_update_keywords

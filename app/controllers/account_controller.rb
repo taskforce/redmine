@@ -1,5 +1,5 @@
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -73,12 +73,7 @@ class AccountController < ApplicationController
         @user.password, @user.password_confirmation = params[:new_password], params[:new_password_confirmation]
         if @user.save
           @token.destroy
-          Mailer.security_notification(@user,
-            message: :mail_body_security_notification_change,
-            field: :field_password,
-            title: :button_change_password,
-            url: {controller: 'my', action: 'password'}
-          ).deliver
+          Mailer.password_updated(@user)
           flash[:notice] = l(:notice_account_password_updated)
           redirect_to signin_path
           return

@@ -1,7 +1,7 @@
 # encoding: utf-8
 #
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -1243,14 +1243,14 @@ RAW
 
     # heading that contains inline code
     assert_match Regexp.new('<div class="contextual heading-2" title="Edit this section" id="section-4">' +
-      '<a class="icon-only icon-edit" href="/projects/1/wiki/Test/edit\?section=4"></a></div>' +
+      '<a class="icon-only icon-edit" href="/projects/1/wiki/Test/edit\?section=4">Edit this section</a></div>' +
       '<a name="Subtitle-with-inline-code"></a>' +
       '<h2 >Subtitle with <code>inline code</code><a href="#Subtitle-with-inline-code" class="wiki-anchor">&para;</a></h2>'),
       result
 
     # last heading
     assert_match Regexp.new('<div class="contextual heading-2" title="Edit this section" id="section-5">' +
-      '<a class="icon-only icon-edit" href="/projects/1/wiki/Test/edit\?section=5"></a></div>' +
+      '<a class="icon-only icon-edit" href="/projects/1/wiki/Test/edit\?section=5">Edit this section</a></div>' +
       '<a name="Subtitle-after-pre-tag"></a>' +
       '<h2 >Subtitle after pre tag<a href="#Subtitle-after-pre-tag" class="wiki-anchor">&para;</a></h2>'),
       result

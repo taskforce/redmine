@@ -1,5 +1,5 @@
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -28,7 +28,7 @@ class AttachmentsController < ApplicationController
     respond_to do |format|
       format.html {
         if @attachment.is_diff?
-          @diff = File.new(@attachment.diskfile, "rb").read
+          @diff = File.read(@attachment.diskfile, :mode => "rb")
           @diff_type = params[:type] || User.current.pref[:diff_type] || 'inline'
           @diff_type = 'inline' unless %w(inline sbs).include?(@diff_type)
           # Save diff type as user preference
@@ -38,7 +38,7 @@ class AttachmentsController < ApplicationController
           end
           render :action => 'diff'
         elsif @attachment.is_text? && @attachment.filesize <= Setting.file_max_size_displayed.to_i.kilobyte
-          @content = File.new(@attachment.diskfile, "rb").read
+          @content = File.read(@attachment.diskfile, :mode => "rb")
           render :action => 'file'
         else
           download

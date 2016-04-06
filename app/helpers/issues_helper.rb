@@ -1,7 +1,7 @@
 # encoding: utf-8
 #
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -112,9 +112,9 @@ module IssuesHelper
       s << content_tag('tr',
              content_tag('td', check_box_tag("ids[]", child.id, false, :id => nil), :class => 'checkbox') +
              content_tag('td', link_to_issue(child, :project => (issue.project_id != child.project_id)), :class => 'subject', :style => 'width: 50%') +
-             content_tag('td', h(child.status)) +
-             content_tag('td', link_to_user(child.assigned_to)) +
-             content_tag('td', child.disabled_core_fields.include?('done_ratio') ? '' : progress_bar(child.done_ratio)),
+             content_tag('td', h(child.status), :class => 'status') +
+             content_tag('td', link_to_user(child.assigned_to), :class => 'assigned_to') +
+             content_tag('td', child.disabled_core_fields.include?('done_ratio') ? '' : progress_bar(child.done_ratio), :class=> 'done_ratio'),
              :class => css)
     end
     s << '</table></form>'
@@ -442,10 +442,11 @@ module IssuesHelper
         # Link to the attachment if it has not been removed
         value = link_to_attachment(atta, :download => true, :only_path => options[:only_path])
         if options[:only_path] != false && atta.is_text?
-          value += link_to('',
+          value += link_to(l(:button_view),
                            { :controller => 'attachments', :action => 'show',
                              :id => atta, :filename => atta.filename },
-                           :class => 'icon icon-magnifier')
+                           :class => 'icon-only icon-magnifier',
+                           :title => l(:button_view))
         end
       else
         value = content_tag("i", h(value)) if value

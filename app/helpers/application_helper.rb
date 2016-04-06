@@ -1,7 +1,7 @@
 # encoding: utf-8
 #
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -454,16 +454,16 @@ module ApplicationHelper
   end
 
   def reorder_links(name, url, method = :post)
-    link_to('',
+    link_to(l(:label_sort_highest),
             url.merge({"#{name}[move_to]" => 'highest'}), :method => method,
             :title => l(:label_sort_highest), :class => 'icon-only icon-move-top') +
-    link_to('',
+    link_to(l(:label_sort_higher),
             url.merge({"#{name}[move_to]" => 'higher'}), :method => method,
             :title => l(:label_sort_higher), :class => 'icon-only icon-move-up') +
-    link_to('',
+    link_to(l(:label_sort_lower),
             url.merge({"#{name}[move_to]" => 'lower'}), :method => method,
             :title => l(:label_sort_lower), :class => 'icon-only icon-move-down') +
-    link_to('',
+    link_to(l(:label_sort_lowest),
             url.merge({"#{name}[move_to]" => 'lowest'}), :method => method,
             :title => l(:label_sort_lowest), :class => 'icon-only icon-move-bottom')
   end
@@ -494,8 +494,13 @@ module ApplicationHelper
         end
         b += ancestors.collect {|p| link_to_project(p, {:jump => current_menu_item}, :class => 'ancestor') }
       end
-      b << h(@project)
-      b.join(" \xc2\xbb ").html_safe
+      b << content_tag(:span, h(@project), class: 'current-project')
+      if b.size > 1
+        separator = content_tag(:span, ' &raquo; '.html_safe, class: 'separator')
+        path = safe_join(b[0..-2], separator) + separator
+        b = [content_tag(:span, path.html_safe, class: 'breadcrumbs'), b[-1]]
+      end
+      safe_join b
     end
   end
 
@@ -887,7 +892,7 @@ module ApplicationHelper
       @current_section += 1
       if @current_section > 1
         content_tag('div',
-          link_to('', options[:edit_section_links].merge(:section => @current_section),
+          link_to(l(:button_edit_section), options[:edit_section_links].merge(:section => @current_section),
                   :class => 'icon-only icon-edit'),
           :class => "contextual heading-#{level}",
           :title => l(:button_edit_section),
@@ -1244,7 +1249,7 @@ module ApplicationHelper
   # +user+ can be a User or a string that will be scanned for an email address (eg. 'joe <joe@foo.bar>')
   def avatar(user, options = { })
     if Setting.gravatar_enabled?
-      options.merge!({:ssl => (request && request.ssl?), :default => Setting.gravatar_default})
+      options.merge!(:default => Setting.gravatar_default)
       email = nil
       if user.respond_to?(:mail)
         email = user.mail
