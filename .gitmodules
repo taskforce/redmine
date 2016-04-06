@@ -1,0 +1,4 @@
+[submodule "plugins/redmine_dashboard"]
+	path = plugins/redmine_dashboard
+	url = https://github.com/taskforce/redmine_dashboard.git
+	branch = stable-v2
