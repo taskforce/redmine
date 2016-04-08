@@ -2,3 +2,6 @@
 	path = plugins/redmine_dashboard
 	url = https://github.com/taskforce/redmine_dashboard.git
 	branch = stable-v2
+[submodule "plugins/redmine_tags"]
+	path = plugins/redmine_tags
+	url = https://github.com/taskforce/redmine_tags.git
