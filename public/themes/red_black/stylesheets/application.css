@@ -7,15 +7,23 @@ select,
 textarea { font-family: "맑은 고딕", Verdana, Sans-Serif; font-size: 10pt; }
 h1, h2, h3, h4 { font-family: "맑은 고딕","Trebuchet MS", Verdana, Sans-Serif; }
 /* color	----------------------------------------------------------- */
-#top-menu { background-color: #000; font-size: 0.8em; }
-#header { background-color: #444; }
+#top-menu { background-color: #600; font-size: 0.8em; }
+#top-menu, #top-menu a, #main-menu li a { font-weight: normal; }
+#header { background-color: #000; }
 #main-menu li a:hover { background-color: #666; }
 #main { }
 a, a:link, a:visited { color: #079; }
 a.wiki-page.new { color: #900 !important; }
 .box { background-color: #fcfcfc; }
-/* geometry	----------------------------------------------------------- */
-#header { min-height: 3em; }
+
+/* more style	----------------------------------------------------------- */
+#header { min-height: 2rem; }
+#header h1 { line-height: 1; margin: 0 0 0.5rem; padding: 0; }
+#quick-search select,
+#quick-search input { color: white; background: #000; border: 1px solid #555; }
+#quick-search select { -moz-appearance: none; -webkit-appearance: none; }
+
+#main-menu li a { padding: 0px 8px; }
 
 /* table	----------------------------------------------------------- */
 table.list { border: none; }
@@ -44,6 +52,8 @@ div.wiki table td:first-of-type { border-left: none; }
 div.wiki table th:last-of-type,
 div.wiki table td:last-of-type { border-right: none; }
 div.wiki blockquote { background: #f9f9f9; padding: 0.1rem 0 0.1rem 0.6rem; }
+div.wiki blockquote p:first-of-type { margin-top: 0.2rem; }
+div.wiki blockquote p:last-of-type { margin-bottom: 0.2rem; }
 div.wiki ul.toc { line-height: 1.2em; background-color: #f9f9f9; }
 div.wiki ul.toc { padding: 0.5em 1em; }
 div.wiki ul.toc li,
@@ -63,6 +73,28 @@ div.wiki ul.toc a { font-size: inherit; }
 .list.issues .priority-highest .subject a { color: #900; font-weight: bold; }
 .list.issues .priority-highest { color: #900; }
 .list.issues table.progress { height: 0.5em; margin: auto; width: 100%; }
+
+.list.issues td.id { padding-left: 2px padding-right: 2px; }
+.list.issues td.id { border-left: 2px solid #777; }
+.list.issues .priority-lowest td.id { border-left-color: #bbb; }
+.list.issues .priority-default td.id { border-left-color: #777; }
+.list.issues .priority-high3 td.id { border-left-color: #c90; }
+.list.issues .priority-high2 td.id { border-left-color: #f90; }
+.list.issues .priority-highest td.id { border-left-color: #b00; }
+
+div.issue { background-color: #fafafa; border-radius 6px; }
+div.issue img.gravatar { border-radius: 90px; }
+div.issue .description .contextual,
+div.issue #issue_tree .contextual,
+/*
+div.issue #relations .contextual {
+	background-color: #eee;
+	border: 1px solid #999;
+	border-radius: 3px;
+	box-shadow: 1px 1px 2px #bbb;
+	padding: 0 4px;
+}
+*/
 
 /* forum	----------------------------------------------------------- */
 table.messages .message td { vertical-align: middle; }
@@ -84,6 +116,23 @@ ul.toc ul ul {display: none; }
 #header, #top-menu { margin: 0px 10px 0px 11px; }
 body { min-width: 500px; }
 */
+
+
+/* plugins/redmine_tags --------------------------------------------------- */
+#sidebar .tags .tag-label { margin: 0; }
+.issue.details .tag-label {
+	border-radius: 5px;
+	background-color: #ddd;
+	padding: 0 3px;
+}
+.issue.details .tag-label a {
+	color: #700;
+}
+
+/* plugins/dashboard	--------------------------------------------------- */
+.rdb-property { display: inline !important; }
+.rdb-card-subject { height: 2.3em !important; }
+.rdb-card .rdb-priority { height: 8em !important; }
 
 /* print settings	--------------------------------------------------- */
 @media print {
