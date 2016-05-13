@@ -2527,6 +2527,17 @@ class IssueTest < ActiveSupport::TestCase
     assert_equal %w(upload foo bar), issue.attachments.map(&:filename)
   end
 
+  def test_save_attachments_with_array_should_warn_about_missing_tokens
+    set_tmp_attachments_directory
+    issue = Issue.generate!
+    issue.save_attachments([
+      {'token' => 'missing'}
+    ])
+    assert !issue.save
+    assert issue.errors[:base].present?
+    assert_equal 0, issue.reload.attachments.count
+  end
+
   def test_closed_on_should_be_nil_when_creating_an_open_issue
     issue = Issue.generate!(:status_id => 1).reload
     assert !issue.closed?
@@ -2744,5 +2755,31 @@ class IssueTest < ActiveSupport::TestCase
     issue = Issue.generate!(:assigned_to => group)
     issue.reload.assigned_to = nil
     assert_equal group, issue.assigned_to_was
+  end
+
+  def test_issue_overdue_should_respect_user_timezone
+    user_in_europe = users(:users_001)
+    user_in_europe.pref.update_attribute :time_zone, 'UTC'
+
+    user_in_asia = users(:users_002)
+    user_in_asia.pref.update_attribute :time_zone, 'Hongkong'
+
+    issue = Issue.generate! :due_date => Date.parse('2016-03-20')
+
+    # server time is UTC
+    time = Time.parse '2016-03-20 20:00 UTC'
+    Time.stubs(:now).returns(time)
+    Date.stubs(:today).returns(time.to_date)
+
+    # for a user in the same time zone as the server the issue is not overdue
+    # yet
+    User.current = user_in_europe
+    assert !issue.overdue?
+
+    # at the same time, a user in East Asia looks at the issue - it's already
+    # March 21st and the issue should be marked overdue
+    User.current = user_in_asia
+    assert issue.overdue?
+
   end
 end

@@ -185,12 +185,12 @@ function buildFilterRow(field, operator, values) {
   case "date":
   case "date_past":
     tr.find('td.values').append(
-      '<span style="display:none;"><input type="text" name="v['+field+'][]" id="values_'+fieldId+'_1" size="10" class="value date_value" /></span>' +
-      ' <span style="display:none;"><input type="text" name="v['+field+'][]" id="values_'+fieldId+'_2" size="10" class="value date_value" /></span>' +
+      '<span style="display:none;"><input type="date" name="v['+field+'][]" id="values_'+fieldId+'_1" size="10" class="value date_value" /></span>' +
+      ' <span style="display:none;"><input type="date" name="v['+field+'][]" id="values_'+fieldId+'_2" size="10" class="value date_value" /></span>' +
       ' <span style="display:none;"><input type="text" name="v['+field+'][]" id="values_'+fieldId+'" size="3" class="value" /> '+labelDayPlural+'</span>'
     );
-    $('#values_'+fieldId+'_1').val(values[0]).datepicker(datepickerOptions);
-    $('#values_'+fieldId+'_2').val(values[1]).datepicker(datepickerOptions);
+    $('#values_'+fieldId+'_1').val(values[0]).datepickerFallback(datepickerOptions);
+    $('#values_'+fieldId+'_2').val(values[1]).datepickerFallback(datepickerOptions);
     $('#values_'+fieldId).val(values[0]);
     break;
   case "string":
@@ -219,8 +219,8 @@ function buildFilterRow(field, operator, values) {
   case "float":
   case "tree":
     tr.find('td.values').append(
-      '<span style="display:none;"><input type="text" name="v['+field+'][]" id="values_'+fieldId+'_1" size="6" class="value" /></span>' +
-      ' <span style="display:none;"><input type="text" name="v['+field+'][]" id="values_'+fieldId+'_2" size="6" class="value" /></span>'
+      '<span style="display:none;"><input type="text" name="v['+field+'][]" id="values_'+fieldId+'_1" size="14" class="value" /></span>' +
+      ' <span style="display:none;"><input type="text" name="v['+field+'][]" id="values_'+fieldId+'_2" size="14" class="value" /></span>'
     );
     $('#values_'+fieldId+'_1').val(values[0]);
     $('#values_'+fieldId+'_2').val(values[1]);
@@ -587,8 +587,51 @@ function beforeShowDatePicker(input, inst) {
       }
       break;
   }
-  $(input).datepicker("option", "defaultDate", default_date);
+  $(input).datepickerFallback("option", "defaultDate", default_date);
 }
+
+(function($){
+  $.fn.positionedItems = function(sortableOptions, options){
+    var settings = $.extend({
+      firstPosition: 1
+    }, options );
+
+    return this.sortable($.extend({
+      handle: ".sort-handle",
+      helper: function(event, ui){
+        ui.children('td').each(function(){
+          $(this).width($(this).width());
+        });
+        return ui;
+      },
+      update: function(event, ui) {
+        var sortable = $(this);
+        var handle = ui.item.find(".sort-handle").addClass("ajax-loading");
+        var url = handle.data("reorder-url");
+        var param = handle.data("reorder-param");
+        var data = {};
+        data[param] = {position: ui.item.index() + settings['firstPosition']};
+        $.ajax({
+          url: url,
+          type: 'put',
+          dataType: 'script',
+          data: data,
+          success: function(data){
+            sortable.children(":even").removeClass("even").addClass("odd");
+            sortable.children(":odd").removeClass("odd").addClass("even");
+          },
+          error: function(jqXHR, textStatus, errorThrown){
+            alert(jqXHR.status);
+            sortable.sortable("cancel");
+          },
+          complete: function(jqXHR, textStatus, errorThrown){
+            handle.removeClass("ajax-loading");
+          }
+        });
+      },
+    }, sortableOptions));
+  }
+}( jQuery ));
 
 function initMyPageSortable(list, url) {
   $('#list-'+list).sortable({
@@ -680,6 +723,33 @@ function toggleDisabledOnChange() {
 function toggleDisabledInit() {
   $('input[data-disables], input[data-enables]').each(toggleDisabledOnChange);
 }
+
+(function ( $ ) {
+
+  // detect if native date input is supported
+  var nativeDateInputSupported = true;
+
+  var input = document.createElement('input');
+  input.setAttribute('type','date');
+  if (input.type === 'text') {
+    nativeDateInputSupported = false;
+  }
+
+  var notADateValue = 'not-a-date';
+  input.setAttribute('value', notADateValue);
+  if (input.value === notADateValue) {
+    nativeDateInputSupported = false;
+  }
+
+  $.fn.datepickerFallback = function( options ) {
+    if (nativeDateInputSupported) {
+      return this;
+    } else {
+      return this.datepicker( options );
+    }
+  };
+}( jQuery ));
+
 $(document).ready(function(){
   $('#content').on('change', 'input[data-disables], input[data-enables]', toggleDisabledOnChange);
   toggleDisabledInit();

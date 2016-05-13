@@ -252,7 +252,7 @@ module ApplicationHelper
 
   def due_date_distance_in_words(date)
     if date
-      l((date < Date.today ? :label_roadmap_overdue : :label_roadmap_due_in), distance_of_date_in_words(Date.today, date))
+      l((date < User.current.today ? :label_roadmap_overdue : :label_roadmap_due_in), distance_of_date_in_words(User.current.today, date))
     end
   end
 
@@ -454,6 +454,9 @@ module ApplicationHelper
   end
 
   def reorder_links(name, url, method = :post)
+    # TODO: remove associated styles from application.css too
+    ActiveSupport::Deprecation.warn "Application#reorder_links will be removed in Redmine 4."
+
     link_to(l(:label_sort_highest),
             url.merge({"#{name}[move_to]" => 'highest'}), :method => method,
             :title => l(:label_sort_highest), :class => 'icon-only icon-move-top') +
@@ -466,6 +469,17 @@ module ApplicationHelper
     link_to(l(:label_sort_lowest),
             url.merge({"#{name}[move_to]" => 'lowest'}), :method => method,
             :title => l(:label_sort_lowest), :class => 'icon-only icon-move-bottom')
+  end
+
+  def reorder_handle(object, options={})
+    data = {
+      :reorder_url => options[:url] || url_for(object),
+      :reorder_param => options[:param] || object.class.name.underscore
+    }
+    content_tag('span', '',
+      :class => "sort-handle",
+      :data => data,
+      :title => l(:button_sort))
   end
 
   def breadcrumb(*args)
@@ -1043,11 +1057,17 @@ module ApplicationHelper
     fields_for(*args, &proc)
   end
 
+  # Render the error messages for the given objects
   def error_messages_for(*objects)
-    html = ""
     objects = objects.map {|o| o.is_a?(String) ? instance_variable_get("@#{o}") : o}.compact
     errors = objects.map {|o| o.errors.full_messages}.flatten
-    if errors.any?
+    render_error_messages(errors)
+  end
+
+  # Renders a list of error messages
+  def render_error_messages(errors)
+    html = ""
+    if errors.present?
       html << "<div id='errorExplanation'><ul>\n"
       errors.each do |error|
         html << "<li>#{h error}</li>\n"
@@ -1151,7 +1171,7 @@ module ApplicationHelper
 
   def calendar_for(field_id)
     include_calendar_headers_tags
-    javascript_tag("$(function() { $('##{field_id}').addClass('date').datepicker(datepickerOptions); });")
+    javascript_tag("$(function() { $('##{field_id}').addClass('date').datepickerFallback(datepickerOptions); });")
   end
 
   def include_calendar_headers_tags

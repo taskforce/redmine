@@ -264,9 +264,9 @@ class Query < ActiveRecord::Base
       if values_for(field)
         case type_for(field)
         when :integer
-          add_filter_error(field, :invalid) if values_for(field).detect {|v| v.present? && !v.match(/^[+-]?\d+$/) }
+          add_filter_error(field, :invalid) if values_for(field).detect {|v| v.present? && !v.match(/\A[+-]?\d+(,[+-]?\d+)*\z/) }
         when :float
-          add_filter_error(field, :invalid) if values_for(field).detect {|v| v.present? && !v.match(/^[+-]?\d+(\.\d*)?$/) }
+          add_filter_error(field, :invalid) if values_for(field).detect {|v| v.present? && !v.match(/\A[+-]?\d+(\.\d*)?\z/) }
         when :date, :date_past
           case operator_for(field)
           when "=", ">=", "<=", "><"
@@ -771,10 +771,15 @@ class Query < ActiveRecord::Base
         when :date, :date_past
           sql = date_clause(db_table, db_field, parse_date(value.first), parse_date(value.first), is_custom_filter)
         when :integer
-          if is_custom_filter
-            sql = "(#{db_table}.#{db_field} <> '' AND CAST(CASE #{db_table}.#{db_field} WHEN '' THEN '0' ELSE #{db_table}.#{db_field} END AS decimal(30,3)) = #{value.first.to_i})"
+          int_values = value.first.to_s.scan(/[+-]?\d+/).map(&:to_i).join(",")
+          if int_values.present?
+            if is_custom_filter
+              sql = "(#{db_table}.#{db_field} <> '' AND CAST(CASE #{db_table}.#{db_field} WHEN '' THEN '0' ELSE #{db_table}.#{db_field} END AS decimal(30,3)) IN (#{int_values}))"
+            else
+              sql = "#{db_table}.#{db_field} IN (#{int_values})"
+            end
           else
-            sql = "#{db_table}.#{db_field} = #{value.first.to_i}"
+            sql = "1=0"
           end
         when :float
           if is_custom_filter
@@ -783,7 +788,7 @@ class Query < ActiveRecord::Base
             sql = "#{db_table}.#{db_field} BETWEEN #{value.first.to_f - 1e-5} AND #{value.first.to_f + 1e-5}"
           end
         else
-          sql = "#{db_table}.#{db_field} IN (" + value.collect{|val| "'#{self.class.connection.quote_string(val)}'"}.join(",") + ")"
+          sql = queried_class.send(:sanitize_sql_for_conditions, ["#{db_table}.#{db_field} IN (?)", value])
         end
       else
         # IN an empty set
@@ -791,7 +796,7 @@ class Query < ActiveRecord::Base
       end
     when "!"
       if value.any?
-        sql = "(#{db_table}.#{db_field} IS NULL OR #{db_table}.#{db_field} NOT IN (" + value.collect{|val| "'#{self.class.connection.quote_string(val)}'"}.join(",") + "))"
+        sql = queried_class.send(:sanitize_sql_for_conditions, ["(#{db_table}.#{db_field} IS NULL OR #{db_table}.#{db_field} NOT IN (?))", value])
       else
         # NOT IN an empty set
         sql = "1=1"
@@ -869,32 +874,32 @@ class Query < ActiveRecord::Base
     when "w"
       # = this week
       first_day_of_week = l(:general_first_day_of_week).to_i
-      day_of_week = Date.today.cwday
+      day_of_week = User.current.today.cwday
       days_ago = (day_of_week >= first_day_of_week ? day_of_week - first_day_of_week : day_of_week + 7 - first_day_of_week)
       sql = relative_date_clause(db_table, db_field, - days_ago, - days_ago + 6, is_custom_filter)
     when "lw"
       # = last week
       first_day_of_week = l(:general_first_day_of_week).to_i
-      day_of_week = Date.today.cwday
+      day_of_week = User.current.today.cwday
       days_ago = (day_of_week >= first_day_of_week ? day_of_week - first_day_of_week : day_of_week + 7 - first_day_of_week)
       sql = relative_date_clause(db_table, db_field, - days_ago - 7, - days_ago - 1, is_custom_filter)
     when "l2w"
       # = last 2 weeks
       first_day_of_week = l(:general_first_day_of_week).to_i
-      day_of_week = Date.today.cwday
+      day_of_week = User.current.today.cwday
       days_ago = (day_of_week >= first_day_of_week ? day_of_week - first_day_of_week : day_of_week + 7 - first_day_of_week)
       sql = relative_date_clause(db_table, db_field, - days_ago - 14, - days_ago - 1, is_custom_filter)
     when "m"
       # = this month
-      date = Date.today
+      date = User.current.today
       sql = date_clause(db_table, db_field, date.beginning_of_month, date.end_of_month, is_custom_filter)
     when "lm"
       # = last month
-      date = Date.today.prev_month
+      date = User.current.today.prev_month
       sql = date_clause(db_table, db_field, date.beginning_of_month, date.end_of_month, is_custom_filter)
     when "y"
       # = this year
-      date = Date.today
+      date = User.current.today
       sql = date_clause(db_table, db_field, date.beginning_of_year, date.end_of_year, is_custom_filter)
     when "~"
       sql = sql_contains("#{db_table}.#{db_field}", value.first)
@@ -909,8 +914,8 @@ class Query < ActiveRecord::Base
 
   # Returns a SQL LIKE statement with wildcards
   def sql_contains(db_field, value, match=true)
-    value = "'%#{self.class.connection.quote_string(value.to_s)}%'"
-    Redmine::Database.like(db_field, value, :match => match)
+    queried_class.send :sanitize_sql_for_conditions,
+      [Redmine::Database.like(db_field, '?', :match => match), "%#{value}%"]
   end
 
   # Adds a filter for the given custom field
@@ -966,12 +971,20 @@ class Query < ActiveRecord::Base
     end
   end
 
+  def date_for_user_time_zone(y, m, d)
+    if tz = User.current.time_zone
+      tz.local y, m, d
+    else
+      Time.local y, m, d
+    end
+  end
+
   # Returns a SQL clause for a date or datetime field.
   def date_clause(table, field, from, to, is_custom_filter)
     s = []
     if from
       if from.is_a?(Date)
-        from = Time.local(from.year, from.month, from.day).yesterday.end_of_day
+        from = date_for_user_time_zone(from.year, from.month, from.day).yesterday.end_of_day
       else
         from = from - 1 # second
       end
@@ -982,7 +995,7 @@ class Query < ActiveRecord::Base
     end
     if to
       if to.is_a?(Date)
-        to = Time.local(to.year, to.month, to.day).end_of_day
+        to = date_for_user_time_zone(to.year, to.month, to.day).end_of_day
       end
       if self.class.default_timezone == :utc
         to = to.utc
@@ -994,7 +1007,7 @@ class Query < ActiveRecord::Base
 
   # Returns a SQL clause for a date or datetime field using relative dates.
   def relative_date_clause(table, field, days_from, days_to, is_custom_filter)
-    date_clause(table, field, (days_from ? Date.today + days_from : nil), (days_to ? Date.today + days_to : nil), is_custom_filter)
+    date_clause(table, field, (days_from ? User.current.today + days_from : nil), (days_to ? User.current.today + days_to : nil), is_custom_filter)
   end
 
   # Returns a Date or Time from the given filter value

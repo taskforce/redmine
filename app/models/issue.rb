@@ -807,19 +807,29 @@ class Issue < ActiveRecord::Base
 
   # Returns true if the issue is overdue
   def overdue?
-    due_date.present? && (due_date < Date.today) && !closed?
+    due_date.present? && (due_date < User.current.today) && !closed?
   end
 
   # Is the amount of work done less than it should for the due date
   def behind_schedule?
     return false if start_date.nil? || due_date.nil?
     done_date = start_date + ((due_date - start_date + 1) * done_ratio / 100).floor
-    return done_date <= Date.today
+    return done_date <= User.current.today
   end
 
   # Does this issue have children?
   def children?
     !leaf?
+  end
+
+  def assignable_trackers
+    trackers = project.trackers
+    if new_record? && parent_issue_id.present?
+      trackers = trackers.reject do |tracker|
+        tracker_id != tracker.id && tracker.disabled_core_fields.include?('parent_issue_id')
+      end
+    end
+    trackers
   end
 
   # Users the issue can be assigned to

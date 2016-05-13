@@ -16,7 +16,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 class IssuesController < ApplicationController
-  menu_item :new_issue, :only => [:new, :create]
   default_search_scope :issues
 
   before_filter :find_issue, :only => [:show, :edit, :update]
@@ -351,6 +350,16 @@ class IssuesController < ApplicationController
     end
   end
 
+  # Overrides Redmine::MenuManager::MenuController::ClassMethods for
+  # when the "New issue" tab is enabled
+  def current_menu_item
+    if Setting.new_project_issue_tab_enabled? && [:new, :create].include?(action_name.to_sym) 
+      :new_issue
+    else
+      super
+    end
+  end
+
   private
 
   def retrieve_previous_and_next_issue_ids
@@ -442,7 +451,7 @@ class IssuesController < ApplicationController
       @issue.project ||= @issue.allowed_target_projects.first
     end
     @issue.author ||= User.current
-    @issue.start_date ||= Date.today if Setting.default_issue_start_date_to_creation_date?
+    @issue.start_date ||= User.current.today if Setting.default_issue_start_date_to_creation_date?
 
     attrs = (params[:issue] || {}).deep_dup
     if action_name == 'new' && params[:was_default_status] == attrs[:status_id]
