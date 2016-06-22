@@ -301,7 +301,7 @@ class Query < ActiveRecord::Base
   end
 
   def trackers
-    @trackers ||= project.nil? ? Tracker.sorted.to_a : project.rolled_up_trackers
+    @trackers ||= (project.nil? ? Tracker.all : project.rolled_up_trackers).visible.sorted
   end
 
   # Returns a hash of localized labels for all filter operators
@@ -422,7 +422,7 @@ class Query < ActiveRecord::Base
 
   def label_for(field)
     label = available_filters[field][:name] if available_filters.has_key?(field)
-    label ||= l("field_#{field.to_s.gsub(/_id$/, '')}", :default => field)
+    label ||= queried_class.human_attribute_name(field, :default => field)
   end
 
   def self.add_available_column(column)
@@ -543,11 +543,9 @@ class Query < ActiveRecord::Base
 
   # Returns the SQL sort order that should be prepended for grouping
   def group_by_sort_order
-    if grouped? && (column = group_by_column)
+    if column = group_by_column
       order = (sort_criteria_order_for(column.name) || column.default_order).try(:upcase)
-      column.sortable.is_a?(Array) ?
-        column.sortable.collect {|s| "#{s} #{order}"}.join(',') :
-        "#{column.sortable} #{order}"
+      Array(column.sortable).map {|s| "#{s} #{order}"}
     end
   end
 
